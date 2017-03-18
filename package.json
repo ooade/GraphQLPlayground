@@ -1,0 +1,45 @@
+{
+  "name": "graphql-with-mongoose",
+  "version": "0.1.0",
+  "description": "Integrating GraphQL With Mongoose",
+  "scripts": {
+    "dev": "backpack",
+    "build": "backpack build",
+    "lint": "eslint --ignore-path .gitignore ."
+  },
+  "keywords": [
+    "Node.js",
+    "Javascript",
+    "GraphQL",
+    "Express",
+    "Apollo"
+  ],
+  "author": "Ademola Adegbuyi <ooade96@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/apollostack/apollo-starter-kit/issues"
+  },
+  "homepage": "https://github.com/apollostack/apollo-starter-kit#readme",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "backpack-core": "^0.2.0",
+    "body-parser": "^1.17.1",
+    "express": "4.13.4",
+    "graphql": "^0.9.1",
+    "graphql-server-express": "^0.6.0",
+    "graphql-tag": "^1.3.1",
+    "graphql-tools": "^0.10.1",
+    "lodash": "^4.17.4",
+    "mongoose": "^4.9.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-inline-import": "^2.0.1",
+    "babel-preset-stage-0": "6.5.0",
+    "casual": "^1.5.11",
+    "eslint": "^2.4.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-import": "^1.1.0",
+    "eslint-plugin-react": "^4.2.3"
+  }
+}
