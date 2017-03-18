@@ -1,0 +1,10 @@
+{
+  "passPerPreset": true,
+  "presets": [
+    "backpack-core/babel",
+    "stage-0"
+  ],
+  "plugins": [
+    "babel-plugin-inline-import"
+  ]
+}
