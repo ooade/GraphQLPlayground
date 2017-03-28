@@ -1,9 +1,14 @@
-import { Author, Post, FortuneCookie, View } from './connectors';
+import { Author, Post, Comment, FortuneCookie, View } from './connectors';
+import { pubsub } from './subscriptions';
 
 const resolvers = {
   Query: {
     author(root, args) {
       return Author.findOne({ ...args }).populate('posts');
+    },
+    comments(root) {
+      // Return all comments
+      return Comment.find();
     },
     getFortuneCookie() {
       return FortuneCookie.getOne();
@@ -16,6 +21,20 @@ const resolvers = {
 
       return author;
     },
+    comments(root, args) {
+      const comment = new Comment(args);
+      comment.save();
+
+      // publish subscription notificatio
+      pubsub.publish('newComments', comment);
+
+      return comment;
+    }
+  },
+  Subscription: {
+    newComments(comment) {
+      return Comment.find();
+    }
   },
   Author: {
     posts(author) {

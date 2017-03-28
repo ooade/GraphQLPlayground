@@ -1,12 +1,7 @@
-import Mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import casual from 'casual';
 import axios from 'axios';
 import _ from 'lodash';
-
-Mongoose.connect('mongodb://localhost:27017/graphql');
-
-// Assign ES6 Promise to mongoose
-Mongoose.Promise = global.Promise;
 
 const authorSchema = new Schema({
   firstName: String,
@@ -26,16 +21,21 @@ const postSchema = new Schema({
   },
 });
 
-const viewSchema = new Mongoose.Schema({
+const viewSchema = new Schema({
   postId: Schema.Types.ObjectId,
   views: Number,
 });
 
+const commentSchema = new Schema({
+  name: String,
+  comment: String
+})
+
 casual.seed(123);
-const View = Mongoose.model('view', viewSchema);
-const Author = Mongoose.model('author', authorSchema);
-const Post = Mongoose.model('post', postSchema);
-// const View = mongoose.model('view', ViewSchema);
+const View = mongoose.model('view', viewSchema);
+const Author = mongoose.model('author', authorSchema);
+const Post = mongoose.model('post', postSchema);
+const Comment = mongoose.model('comment', commentSchema);
 
 // Seed data
 _.times(10, () => {
@@ -71,4 +71,4 @@ const FortuneCookie = {
   },
 };
 
-export { Author, Post, View, FortuneCookie };
+export { Author, Post, View, Comment, FortuneCookie };

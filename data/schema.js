@@ -14,17 +14,29 @@ export default `
     author: Author
   }
 
+  type Comment {
+    name: String
+    comment: String
+  }
+
   type Query {
     author(firstName: String, lastName: String): Author
+    comments: [Comment]
     getFortuneCookie: String
   }
 
   type Mutation {
     author(firstName: String, lastName: String): Author
+    comments(name:String, comment: String): Comment
+  }
+
+  type Subscription {
+    newComments: [Comment]
   }
 
   schema {
     query: Query
     mutation: Mutation
+    subscription: Subscription
   }
 `;
