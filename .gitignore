@@ -5,4 +5,5 @@ npm-debug.log*
 
 # builds/modules
 node_modules
+.next
 build

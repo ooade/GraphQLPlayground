@@ -1,7 +1,7 @@
 {
   "passPerPreset": true,
   "presets": [
-    "backpack-core/babel",
+    "next/babel",
     "stage-0"
   ],
   "plugins": [

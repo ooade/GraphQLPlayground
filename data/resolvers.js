@@ -1,10 +1,10 @@
-import { Author, Post, Comment, FortuneCookie, View } from './connectors';
-import { pubsub } from './subscriptions';
+const { Author, Post, Comment, FortuneCookie, View } = require('./connectors');
+const { pubsub } = require('./subscriptions');
 
 const resolvers = {
   Query: {
     author(root, args) {
-      return Author.findOne({ ...args }).populate('posts');
+      return Author.findOne(Object.assign({}, args)).populate('posts');
     },
     comments(root) {
       // Return all comments
@@ -33,6 +33,8 @@ const resolvers = {
   },
   Subscription: {
     newComments(comment) {
+      // console.log(comment);
+
       return Comment.find();
     }
   },
@@ -54,4 +56,4 @@ const resolvers = {
   },
 };
 
-export default resolvers;
+module.exports = resolvers;

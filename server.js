@@ -1,22 +1,28 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
-import { createServer } from 'http';
+const express = require('express');
+const path = require('path');
+const next = require('next');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const { createServer } = require('http');
 
 mongoose.connect('mongodb://localhost:27017/graphql');
 
 // Assign ES6 Promise to mongoose
 mongoose.Promise = global.Promise;
 
-import { graphqlExpress, graphiqlExpress } from 'graphql-server-express';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { makeExecutableSchema } from 'graphql-tools';
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dir: '.', dev });
+const handle = app.getRequestHandler();
 
-import Schema from './data/schema';
-import Resolvers from './data/resolvers';
-import { subscriptionManager } from './data/subscriptions';
+const { graphqlExpress, graphiqlExpress } = require('graphql-server-express');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { makeExecutableSchema } = require('graphql-tools');
 
-import { Comment } from './data/connectors';
+const Schema = require('./data/schema');
+const Resolvers = require('./data/resolvers');
+const { subscriptionManager } = require('./data/subscriptions');
+
+const { Comment } = require('./data/connectors');
 
 const executableSchema = makeExecutableSchema({
   typeDefs: Schema,
@@ -25,39 +31,45 @@ const executableSchema = makeExecutableSchema({
 
 const GRAPHQL_PORT = 8080;
 
-const app = express();
+app.prepare()
+  .then(_ => {
+    const server = express();
 
-app.use('/graphql', bodyParser.json(), graphqlExpress({
-  schema: executableSchema
-}));
+    server.use('/graphql', bodyParser.json(), graphqlExpress({
+      schema: executableSchema,
+      pretty: true
+    }));
 
-app.use('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql',
-}));
+    server.use('/graphiql', graphiqlExpress({
+      endpointURL: '/graphql'
+    }));
 
-const server = createServer(app);
+    server.get('*', (req, res) => handle(req, res));
 
-server.listen(GRAPHQL_PORT, () => {
-  console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`);
-});
+    const graphqlServer = createServer(server);
 
-const subscriptionServer = new SubscriptionServer(
-  {
-    subscriptionManager,
-    // onConnect: async (connectionParams, webSocket) => {
-    //   console.log('Sub is connecting///')
-    // },
-    // onSubscribe: (msg, params) => {
-    //   console.log(msg, params);
-    //   return Object.assign({}, params, {
-    //     context: {
-    //       Comments: new Comments()
-    //     }
-    //   })
-    // }
-  },
-  {
-    server,
-    path: '/subscriptions'
-  }
-);
+    graphqlServer.listen(GRAPHQL_PORT, () => {
+      console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`);
+    });
+
+    const subscriptionServer = new SubscriptionServer(
+      {
+        subscriptionManager,
+        // onConnect: async (connectionParams, webSocket) => {
+        //   console.log('Sub is connecting///')
+        // },
+        // onSubscribe: (msg, params) => {
+        //   console.log(msg, params);
+        //   return Object.assign({}, params, {
+        //     context: {
+        //       Comments: new Comments()
+        //     }
+        //   })
+        // }
+      },
+      {
+        server: graphqlServer,
+        path: '/subscriptions'
+      }
+    );
+  });

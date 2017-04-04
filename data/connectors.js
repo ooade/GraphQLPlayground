@@ -1,7 +1,9 @@
-import mongoose, { Schema } from 'mongoose';
-import casual from 'casual';
-import axios from 'axios';
-import _ from 'lodash';
+const mongoose = require('mongoose');
+const casual = require('casual');
+const axios = require('axios');
+const _ = require('lodash');
+
+const Schema = mongoose.Schema
 
 const authorSchema = new Schema({
   firstName: String,
@@ -71,4 +73,4 @@ const FortuneCookie = {
   },
 };
 
-export { Author, Post, View, Comment, FortuneCookie };
+module.exports = { Author, Post, View, Comment, FortuneCookie };
