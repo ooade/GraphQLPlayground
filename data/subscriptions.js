@@ -1,5 +1,5 @@
-import { PubSub, SubscriptionManager } from 'graphql-subscriptions';
-import schema from './schema';
+const { PubSub, SubscriptionManager } = require('graphql-subscriptions');
+const schema = require('./schema');
 
 const pubsub = new PubSub();
 
@@ -8,4 +8,4 @@ const subscriptionManager = new SubscriptionManager({
   pubsub
 });
 
-export { subscriptionManager, pubsub };
+module.exports = { subscriptionManager, pubsub };
