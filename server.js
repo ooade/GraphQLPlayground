@@ -55,9 +55,9 @@ app.prepare()
     const subscriptionServer = new SubscriptionServer(
       {
         subscriptionManager,
-        // onConnect: async (connectionParams, webSocket) => {
-        //   console.log('Sub is connecting///')
-        // },
+        onConnect: (connectionParams, webSocket) => {
+          console.log('SubscriptionServer Connected');
+        },
         // onSubscribe: (msg, params) => {
         //   console.log(msg, params);
         //   return Object.assign({}, params, {
@@ -69,7 +69,7 @@ app.prepare()
       },
       {
         server: graphqlServer,
-        path: '/subscriptions'
+        path: '/sub'
       }
     );
   });
