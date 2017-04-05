@@ -19,7 +19,7 @@ class SubmitComment extends React.Component {
       },
       refetchQueries: [ { query: commentListQuery }]
     }).then(() => {
-      this.props.socket.emit('add comment', this.state.comment);
+      this.props.socket.emit('add comment', this.state.comment, this.props.query.key);
       this.setState({ name: '', comment: '' });
     });
   }
@@ -35,7 +35,10 @@ class SubmitComment extends React.Component {
         <input
           placeholder='comment'
           value={this.state.comment}
-          onChange={ e => this.setState({ comment: e.target.value }) }
+          onChange={ e => {
+            this.setState({ comment: e.target.value });
+            this.props.socket.emit('typing', this.state.name, this.props.query.key);
+          } }
         />
         <button>Submit</button>
       </form>

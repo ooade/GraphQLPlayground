@@ -1,22 +1,42 @@
 import React from 'react';
 import { gql, graphql } from 'react-apollo';
 
-function CommentsList({ data: { loading, comments, refetch }, socket }) {
-  if (loading) return <div> Loading... </div>;
+class CommentsList extends React.Component {
+  state = {
+    typing: ''
+  }
 
-  socket.on('add comment', (data) => {
-    refetch();
-  });
+  componentDidMount() {
+    const { data: { refetch }, socket, query: { key } } = this.props;
 
-  return (
-    <div>
-      { comments.map((comment, key) =>
-        <div key={key}>
-          {comment.name}: {comment.comment}
-        </div>
-      )}
-    </div>
-  );
+    socket.emit('join private', key);
+
+    socket.on('add comment', (data) => {
+      refetch();
+      this.setState({ typing: '' });
+    });
+
+    socket.on('typing', (data) => {
+      this.setState({ typing: `${data} is typing...` });
+    });
+  }
+
+  render() {
+    const { data: { loading, comments } } = this.props;
+
+    if (loading) return <div> Loading... </div>;
+
+    return (
+      <div>
+        { comments.map((comment, key) =>
+          <div key={key}>
+            {comment.name}: {comment.comment}
+          </div>
+        )}
+        <p> { this.state.typing }</p>
+      </div>
+    );
+  }
 }
 
 export const commentListQuery = gql`

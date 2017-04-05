@@ -54,9 +54,17 @@ app.prepare()
         console.log('connected with', socket.id);
       });
 
-      socket.on('add comment', (data) => {
-        console.log('comment added', data);
-        socket.broadcast.emit('add comment', data);
+      socket.on('add comment', (comment, key) => {
+        socket.broadcast.emit('add comment', comment);
+      })
+
+      // For private chats distinguished by query
+      socket.on('join private', (key) => {
+        socket.join(key);
+      });
+
+      socket.on('typing', (data, key) => {
+        socket.broadcast.to(key).emit('typing', data);
       })
 
       socket.on('disconnect', () => {
