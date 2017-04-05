@@ -15,12 +15,10 @@ const app = next({ dir: '.', dev });
 const handle = app.getRequestHandler();
 
 const { graphqlExpress, graphiqlExpress } = require('graphql-server-express');
-const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { makeExecutableSchema } = require('graphql-tools');
 
 const Schema = require('./data/schema');
 const Resolvers = require('./data/resolvers');
-const { subscriptionManager } = require('./data/subscriptions');
 
 const { Comment } = require('./data/connectors');
 
@@ -30,6 +28,7 @@ const executableSchema = makeExecutableSchema({
 });
 
 const GRAPHQL_PORT = 8080;
+
 
 app.prepare()
   .then(_ => {
@@ -48,28 +47,24 @@ app.prepare()
 
     const graphqlServer = createServer(server);
 
+    const io = require('socket.io')(graphqlServer);
+
+    io.on('connection', (socket) => {
+      socket.on('client connected', (data) => {
+        console.log('connected with', socket.id);
+      });
+
+      socket.on('add comment', (data) => {
+        console.log('comment added', data);
+        socket.broadcast.emit('add comment', data);
+      })
+
+      socket.on('disconnect', () => {
+        console.log('Socket.io Disconnecting...')
+      });
+    });
+
     graphqlServer.listen(GRAPHQL_PORT, () => {
       console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`);
     });
-
-    const subscriptionServer = new SubscriptionServer(
-      {
-        subscriptionManager,
-        onConnect: (connectionParams, webSocket) => {
-          console.log('SubscriptionServer Connected');
-        },
-        // onSubscribe: (msg, params) => {
-        //   console.log(msg, params);
-        //   return Object.assign({}, params, {
-        //     context: {
-        //       Comments: new Comments()
-        //     }
-        //   })
-        // }
-      },
-      {
-        server: graphqlServer,
-        path: '/sub'
-      }
-    );
   });
