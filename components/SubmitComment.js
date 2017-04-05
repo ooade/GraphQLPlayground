@@ -18,7 +18,10 @@ class SubmitComment extends React.Component {
         comment: this.state.comment
       },
       refetchQueries: [ { query: commentListQuery }]
-    }).then(() => this.setState({ name: '', comment: '' }));
+    }).then(() => {
+      this.props.socket.emit('add comment', this.state.comment);
+      this.setState({ name: '', comment: '' });
+    });
   }
 
   render() {

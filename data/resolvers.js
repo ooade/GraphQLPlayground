@@ -1,5 +1,4 @@
 const { Author, Post, Comment, FortuneCookie, View } = require('./connectors');
-const { pubsub } = require('./subscriptions');
 
 const resolvers = {
   Query: {
@@ -24,9 +23,6 @@ const resolvers = {
     comments(root, args) {
       const comment = new Comment(args);
       comment.save();
-
-      // publish subscription notificatio
-      pubsub.publish('newComments', comment);
 
       return comment;
     }
