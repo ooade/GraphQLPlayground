@@ -1,4 +1,6 @@
 # GraphQLPlayground
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/ooade/GraphQLPlayground.svg)](https://greenkeeper.io/)
 Hai!!
 
 # Why we use passPerPreset?
