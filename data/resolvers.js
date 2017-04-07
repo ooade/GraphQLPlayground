@@ -27,13 +27,6 @@ const resolvers = {
       return comment;
     }
   },
-  Subscription: {
-    newComments(comment) {
-      // console.log(comment);
-
-      return Comment.find();
-    }
-  },
   Author: {
     posts(author) {
       return author.posts;

@@ -30,13 +30,8 @@ module.exports = `
     comments(name:String, comment: String): Comment
   }
 
-  type Subscription {
-    newComments: [Comment]
-  }
-
   schema {
     query: Query
     mutation: Mutation
-    subscription: Subscription
   }
 `;
