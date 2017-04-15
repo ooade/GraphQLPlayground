@@ -11,7 +11,7 @@ socket.emit('client connected', 'user');
 
 // import components
 import CommentsList from '../components/CommentsList';
-import SubmitComment from '../components/SubmitComment';
+import SubmitComment from '../components/SubmitComments';
 
 export default withData(props => (
   <div>
