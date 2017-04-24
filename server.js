@@ -4,8 +4,21 @@ const next = require('next');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const { createServer } = require('http');
+const chalk = require('chalk');
 
 mongoose.connect('mongodb://localhost:27017/graphql');
+
+mongoose.connection.on('error', (error) => {
+  console.log(
+    chalk.red('Make sure mongodb service is started:'),
+    chalk.red(error.message)
+  );
+  process.exit(1);
+});
+
+mongoose.connection.on('open', () => {
+  console.log(chalk.green('Mongo connected 😉'));
+});
 
 // Assign ES6 Promise to mongoose
 mongoose.Promise = global.Promise;
