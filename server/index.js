@@ -9,15 +9,12 @@ const chalk = require('chalk');
 mongoose.connect('mongodb://localhost:27017/graphql');
 
 mongoose.connection.on('error', (error) => {
-  console.log(
-    chalk.red('Make sure mongodb service is started:'),
-    chalk.red(error.message)
-  );
+  console.log('Check your database connection');
   process.exit(1);
 });
 
 mongoose.connection.on('open', () => {
-  console.log(chalk.green('Mongo connected 😉'));
+  console.log('Mongo connected 😉');
 });
 
 // Assign ES6 Promise to mongoose
@@ -40,8 +37,7 @@ const executableSchema = makeExecutableSchema({
   resolvers: Resolvers,
 });
 
-const GRAPHQL_PORT = 8080;
-
+const GRAPHQL_PORT = process.env.PORT || 8080;
 
 app.prepare()
   .then(_ => {
@@ -60,30 +56,7 @@ app.prepare()
 
     const graphqlServer = createServer(server);
 
-    const io = require('socket.io')(graphqlServer);
-
-    io.on('connection', (socket) => {
-      socket.on('client connected', (data) => {
-        console.log('connected with', socket.id);
-      });
-
-      socket.on('add comment', (comment, key) => {
-        socket.broadcast.emit('add comment', comment);
-      })
-
-      // For private chats distinguished by query
-      socket.on('join private', (key) => {
-        socket.join(key);
-      });
-
-      socket.on('typing', (data, key) => {
-        socket.broadcast.to(key).emit('typing', data);
-      })
-
-      socket.on('disconnect', () => {
-        console.log('Socket.io Disconnecting...')
-      });
-    });
+    require('./sockets')(graphqlServer);
 
     graphqlServer.listen(GRAPHQL_PORT, () => {
       console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`);
