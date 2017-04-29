@@ -3,10 +3,14 @@ const path = require('path');
 const next = require('next');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
 const { createServer } = require('http');
-const chalk = require('chalk');
 
-mongoose.connect('mongodb://localhost:27017/graphql');
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/graphql';
+
+mongoose.connect(MONGO_URI);
 
 mongoose.connection.on('error', (error) => {
   console.log('Check your database connection');
@@ -35,6 +39,11 @@ const { Comment } = require('./data/connectors');
 const executableSchema = makeExecutableSchema({
   typeDefs: Schema,
   resolvers: Resolvers,
+  // logger: {
+  //   log: (e) => {
+  //     console.log(e);
+  //   }
+  // }
 });
 
 const GRAPHQL_PORT = process.env.PORT || 8080;
@@ -43,13 +52,31 @@ app.prepare()
   .then(_ => {
     const server = express();
 
-    server.use('/graphql', bodyParser.json(), graphqlExpress({
-      schema: executableSchema,
-      pretty: true
+    server.use(bodyParser.json());
+
+    server.use(session({
+      resave: true,
+      saveUninitialized: true,
+      secret: process.env.SECRET || 'Meow!',
+      store: new MongoStore({ url: MONGO_URI, autoReconnect: true })
+    }));
+
+    // Passport JS is what we use to handle our logins
+    server.use(passport.initialize());
+    server.use(passport.session());
+
+    server.use('/api', graphqlExpress((req) => {
+      return {
+        context: {
+          req
+        },
+        schema: executableSchema,
+        pretty: true
+      }
     }));
 
     server.use('/graphiql', graphiqlExpress({
-      endpointURL: '/graphql'
+      endpointURL: '/api'
     }));
 
     server.get('*', (req, res) => handle(req, res));
@@ -59,6 +86,6 @@ app.prepare()
     require('./sockets')(graphqlServer);
 
     graphqlServer.listen(GRAPHQL_PORT, () => {
-      console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`);
+      console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}`);
     });
   });
