@@ -14,6 +14,19 @@ module.exports = `
     author: Author
   }
 
+  type Errors {
+    key: String,
+    message: String
+  }
+
+  type User {
+    id: Int
+    email: String
+    isLoggedIn: Boolean
+    gravatar: String
+    errors: [Errors]
+  }
+
   type Comment {
     name: String
     comment: String
@@ -27,6 +40,8 @@ module.exports = `
 
   type Mutation {
     author(firstName: String, lastName: String): Author
+    signin(email: String!, password: String!): User
+    signup(email: String!, password: String!): User
     comments(name:String, comment: String): Comment
   }
 

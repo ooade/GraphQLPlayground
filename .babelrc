@@ -1,5 +1,4 @@
 {
-  "passPerPreset": true,
   "presets": [
     "next/babel",
     "stage-0"
