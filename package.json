@@ -4,7 +4,8 @@
   "description": "Integrating GraphQL With Mongoose",
   "scripts": {
     "dev": "node server",
-    "build": "NODE_ENV=production node server ",
+    "build": "next build",
+    "start": "NODE_ENV=production node server",
     "lint": "eslint --ignore-path .gitignore ."
   },
   "keywords": [

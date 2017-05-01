@@ -10,24 +10,30 @@ passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-exports.isLoggedIn = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next(); // carry on!
-  }
-};
-
 const resolvers = {
   Query: {
     author(root, args) {
       return Author.findOne(Object.assign({}, args)).populate('posts');
     },
-    comments(root) {
+    comments(root, args, { user }) {
+      console.log(user);
+      return new Promise((resolve, reject) => {
+        if (user) {
+          resolve(Comment.find());
+        }
+      });
       // Return all comments
-      return Comment.find();
     },
     getFortuneCookie() {
       return FortuneCookie.getOne();
     },
+    user(root, args, { user }) {
+      return new Promise((resolve, reject) => {
+        if (!user) { reject('Not logged in!'); }
+
+        resolve(user);
+      });
+    }
   },
   Mutation: {
     author(root, args) {
@@ -42,20 +48,22 @@ const resolvers = {
 
       return comment;
     },
-    signin(root, { email, password }, { req }) {
-      passport.authenticate('local', (err, user) => {
+    async signin(root, { email, password }, { login, user }) {
+      passport.authenticate('local', async (err, user) => {
         if (!user) {
-          console.log('Not good!');
+          console.log('Not found!');
+          return;
         }
-        console.log(user);
-        req.login(user, () => ({ user, isLoggedIn: req.isAuthenticated }));
+
+        await login(user, () => {
+          console.log('Logged in', user);
+          return {user};
+        });
       })({ body: { email, password }});
-      return {
-        isLoggedIn: req.isAuthenticated
-      }
       // await login(, password });
       // check login
       // if auth, send a token
+      return Object.assign({}, user);
     },
     async signup(root, { email, password }) {
       const user = new User({ email });

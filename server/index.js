@@ -29,22 +29,8 @@ const app = next({ dir: '.', dev });
 const handle = app.getRequestHandler();
 
 const { graphqlExpress, graphiqlExpress } = require('graphql-server-express');
-const { makeExecutableSchema } = require('graphql-tools');
 
-const Schema = require('./data/schema');
-const Resolvers = require('./data/resolvers');
-
-const { Comment } = require('./data/connectors');
-
-const executableSchema = makeExecutableSchema({
-  typeDefs: Schema,
-  resolvers: Resolvers,
-  // logger: {
-  //   log: (e) => {
-  //     console.log(e);
-  //   }
-  // }
-});
+const schema = require('./data/schema');
 
 const GRAPHQL_PORT = process.env.PORT || 8080;
 
@@ -52,31 +38,47 @@ app.prepare()
   .then(_ => {
     const server = express();
 
-    server.use(bodyParser.json());
-
     server.use(session({
-      resave: true,
-      saveUninitialized: true,
+      resave: false, //don't save session if unmodified
+      saveUninitialized: false, // don't create session until something stored
       secret: process.env.SECRET || 'Meow!',
-      store: new MongoStore({ url: MONGO_URI, autoReconnect: true })
+      key: process.env.KEY || 1234,
+      store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
     }));
+
+    server.use(bodyParser.json());
 
     // Passport JS is what we use to handle our logins
     server.use(passport.initialize());
     server.use(passport.session());
 
-    server.use('/api', graphqlExpress((req) => {
+    server.post('/login', (req, res, next) => {
+      const { email, password } = req.body;
+
+      passport.authenticate('local', (err, user) => {
+        if (!user) {
+          console.log('Not found!');
+          return res.end('Auth error!')
+        }
+
+        req.login(user, () => {
+          console.log('Logged in', user);
+        });
+        next(user);
+      })({ body: { email, password }});
+    });
+
+    server.use('/graphql', graphqlExpress((req) => {
       return {
+        schema,
         context: {
-          req
-        },
-        schema: executableSchema,
-        pretty: true
+          user: req.user
+        }
       }
     }));
 
     server.use('/graphiql', graphiqlExpress({
-      endpointURL: '/api'
+      endpointURL: '/graphql'
     }));
 
     server.get('*', (req, res) => handle(req, res));
