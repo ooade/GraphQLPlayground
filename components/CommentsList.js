@@ -3,7 +3,7 @@ import { gql, graphql } from 'react-apollo';
 
 class CommentsList extends React.Component {
   state = {
-    typing: ''
+    typing: '',
   }
 
   componentDidMount() {
@@ -11,7 +11,7 @@ class CommentsList extends React.Component {
 
     socket.emit('join private', key);
 
-    socket.on('add comment', (data) => {
+    socket.on('add comment', () => {
       refetch();
       this.setState({ typing: '' });
     });
@@ -28,19 +28,19 @@ class CommentsList extends React.Component {
 
     return (
       <div>
-        { comments.map((comment, key) =>
+         { comments.map((comment, key) =>
           <div key={key}>
             {comment.name}: {comment.comment}
-          </div>
+          </div>,
         )}
-        <p> { this.state.typing }</p>
+        <p> { this.state.typing } </p>
       </div>
     );
   }
 }
 
 export const commentListQuery = gql`
-  {
+  query fetchComments {
     comments {
       name
       comment

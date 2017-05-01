@@ -1,4 +1,7 @@
-module.exports = `
+const { makeExecutableSchema } = require('graphql-tools');
+const resolvers = require('./resolvers');
+
+const typeDefs = `
   type Author {
     id: String
     firstName: String
@@ -35,6 +38,7 @@ module.exports = `
   type Query {
     author(firstName: String, lastName: String): Author
     comments: [Comment]
+    user: User
     getFortuneCookie: String
   }
 
@@ -50,3 +54,5 @@ module.exports = `
     mutation: Mutation
   }
 `;
+
+module.exports = makeExecutableSchema({ typeDefs, resolvers });
