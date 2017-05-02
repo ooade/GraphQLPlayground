@@ -1,25 +1,25 @@
 module.exports = (server) => {
-  const io = require('socket.io')(server);
-  io.on('connection', (socket) => {
-    socket.on('client connected', (data) => {
-      console.log('connected with', socket.id);
-    });
+	const io = require('socket.io')(server);
+	io.on('connection', (socket) => {
+		socket.on('client connected', (data) => {
+			console.log('connected with', socket.id);
+		});
 
-    socket.on('add comment', (comment, key) => {
-      socket.broadcast.emit('add comment', comment);
-    })
+		socket.on('add comment', (comment, key) => {
+			socket.broadcast.emit('add comment', comment);
+		})
 
-    // For private chats distinguished by query
-    socket.on('join private', (key) => {
-      socket.join(key);
-    });
+		// For private chats distinguished by query
+		socket.on('join private', (key) => {
+			socket.join(key);
+		});
 
-    socket.on('typing', (data, key) => {
-      socket.broadcast.to(key).emit('typing', data);
-    })
+		socket.on('typing', (data, key) => {
+			socket.broadcast.to(key).emit('typing', data);
+		})
 
-    socket.on('disconnect', () => {
-      console.log('Socket.io Disconnecting...')
-    });
-  });
+		socket.on('disconnect', () => {
+			console.log('Socket.io Disconnecting...')
+		});
+	});
 }
