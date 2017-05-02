@@ -1,31 +1,43 @@
 import React from 'react';
 import { gql, graphql } from 'react-apollo';
 
-const LoginForm = (props) => {
-  let state = {
-    email: '',
-    password: ''
+class RegistrationForm extends React.Component {
+  state = {
+    email: 'email',
+    password: 'password'
   }
 
-  const onFormSubmit = (e) => {
+  onFormSubmit = (e) => {
     e.preventDefault();
-    props.mutate({
+
+    this.props.mutate({
       variables: {
-        email: state.email,
-        password: state.password
+        email: this.state.email,
+        password: this.state.password
       }
     })
     .then(d => console.log(d))
     .catch(e => console.log(e.message));
   }
 
-  return (
-    <form onSubmit={onFormSubmit}>
-      <input type='text' placeholder='email' onInput={e => state.email = e.target.value}/> <br/>
-      <input type='password' placeholder='password' onInput={e => state.password = e.target.value}/> <br/>
-      <button> Submit </button>
-    </form>
-  )
+  render() {
+    return (
+      <form onSubmit={this.onFormSubmit}>
+        <input 
+          type='text' 
+          placeholder='email' 
+          onInput={e => this.setState({ email: e.target.value }) }
+        /> <br/>
+        <input 
+          type='password' 
+          placeholder='password' 
+          onInput={e => this.setState({ password: e.target.value })}
+        /> <br/>
+        <button> Submit </button>
+        <a href='/'>Go home</a>
+      </form>
+    )
+  }
 }
 
 const mutator = gql`
@@ -40,4 +52,4 @@ const mutator = gql`
   }
 `
 
-export default graphql(mutator)(LoginForm);
+export default graphql(mutator)(RegistrationForm);

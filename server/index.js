@@ -52,13 +52,13 @@ app.prepare()
     server.use(passport.initialize());
     server.use(passport.session());
 
+    // How login will be... Moggled up but...
     server.post('/login', (req, res, next) => {
       const { email, password } = req.body;
 
       passport.authenticate('local', (err, user) => {
         if (!user) {
-          console.log('Not found!');
-          return res.end('Auth error!')
+          res.sendStatus(400).end('Auth Error!');
         }
 
         req.login(user, () => {
@@ -68,14 +68,13 @@ app.prepare()
       })({ body: { email, password }});
     });
 
-    server.use('/graphql', graphqlExpress((req) => {
-      return {
-        schema,
-        context: {
-          user: req.user
-        }
+    server.use('/graphql', graphqlExpress((req) => ({
+      schema,
+      pretty: true,
+      context: {
+        user: req.user
       }
-    }));
+    })));
 
     server.use('/graphiql', graphiqlExpress({
       endpointURL: '/graphql'

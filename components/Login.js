@@ -1,14 +1,15 @@
 import React from 'react';
 import { gql, graphql } from 'react-apollo';
 
-const RegistrationForm = (props) => {
-  let state = {
-    email: '',
-    password: ''
+class LoginForm extends React.Component {
+  state = {
+    email: 'email',
+    password: 'password'
   }
 
-  const onFormSubmit = (e) => {
+  onFormSubmit = (e) => {
     e.preventDefault();
+
     const options = {
       method: 'POST',
       headers: {
@@ -16,11 +17,14 @@ const RegistrationForm = (props) => {
       },
       credentials: 'same-origin', // Necessary for our cookie :)
       body: JSON.stringify({
-        email: state.email,
-        password: state.password
+        email: this.state.email,
+        password: this.state.password
       })
     }
-    fetch('/login', options);
+    fetch('/login', options)
+      .catch(e => {
+        console.log(e);
+      })
     // props.mutate({
     //   variables: {
     //     email: state.email,
@@ -31,14 +35,24 @@ const RegistrationForm = (props) => {
     // .catch(e => console.log(e.message));
   }
 
-  return (
-    <form onSubmit={onFormSubmit}>
-      <input type='text' placeholder='email' onInput={e => state.email = e.target.value}/> <br/>
-      <input type='password' placeholder='password' onInput={e => state.password = e.target.value}/> <br/>
-      <button> Submit </button>
-      <a href='/'>Go home</a>
-    </form>
-  )
+  render() {
+    return (
+      <form onSubmit={this.onFormSubmit}>
+        <input 
+          type='text' 
+          placeholder='email' 
+          onInput={e => this.setState({ email: e.target.value }) }
+        /> <br/>
+        <input 
+          type='password' 
+          placeholder='password' 
+          onInput={e => this.setState({ password: e.target.value })}
+        /> <br/>
+        <button> Submit </button>
+        <a href='/'>Go home</a>
+      </form>
+    )
+  }
 }
 
 const mutator = gql`
@@ -49,4 +63,4 @@ const mutator = gql`
   }
 `
 
-export default RegistrationForm;
+export default LoginForm;

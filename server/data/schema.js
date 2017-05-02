@@ -23,9 +23,8 @@ const typeDefs = `
   }
 
   type User {
-    id: Int
+    id: String #Mongo Ids are 32-bit signed integer, better off coersed to a string.
     email: String
-    isLoggedIn: Boolean
     gravatar: String
     errors: [Errors]
   }
