@@ -24,6 +24,19 @@ mongoose.connection.on('open', () => {
 // Assign ES6 Promise to mongoose
 mongoose.Promise = global.Promise;
 
+const jwt = require('jwt-simple');
+
+function tokenForUser(user) {
+  const timeStamp = new Date().getTime();
+  return jwt.encode({ id: user.id, iat: timeStamp }, 'Meow!');
+}
+
+const signin = (req, res, next) => {
+  //User has already had their email and password auth'd
+  //req.user is passed on from passort
+  res.send({ token: tokenForUser(req.user) });
+}
+
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dir: '.', dev });
 const handle = app.getRequestHandler();
@@ -38,42 +51,28 @@ app.prepare()
   .then(_ => {
     const server = express();
 
-    server.use(session({
-      resave: false, //don't save session if unmodified
-      saveUninitialized: false, // don't create session until something stored
-      secret: process.env.SECRET || 'Meow!',
-      key: process.env.KEY || 1234,
-      store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
-    }));
+    // server.use(session({
+    //   resave: false, //don't save session if unmodified
+    //   saveUninitialized: false, // don't create session until something stored
+    //   secret: process.env.SECRET || 'Meow!',
+    //   key: process.env.KEY || 1234,
+    //   store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
+    // }));
 
     server.use(bodyParser.json());
 
+    const requireSignin = passport.authenticate('local', { session: false });
     // Passport JS is what we use to handle our logins
-    server.use(passport.initialize());
-    server.use(passport.session());
+    // server.use(passport.initialize());
+    // server.use(passport.session());
 
     // How login will be... Moggled up but...
-    server.post('/login', (req, res, next) => {
-      const { email, password } = req.body;
-
-      passport.authenticate('local', (err, user) => {
-        if (!user) {
-          res.sendStatus(400).end('Auth Error!');
-        }
-
-        req.login(user, () => {
-          console.log('Logged in', user);
-        });
-        next(user);
-      })({ body: { email, password }});
-    });
+    server.post('/login', requireSignin, signin);
 
     server.use('/graphql', graphqlExpress((req) => ({
       schema,
       pretty: true,
-      context: {
-        user: req.user
-      }
+      context: {}
     })));
 
     server.use('/graphiql', graphiqlExpress({

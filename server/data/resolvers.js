@@ -2,24 +2,28 @@ const { Author, Post, Comment, FortuneCookie, View } = require('./connectors');
 const User = require('../models/User');
 const promisify = require('es6-promisify');
 const validator = require('validator');
+const jwt = require('jwt-simple');
+
+function tokenForUser(user) {
+  const timeStamp = new Date().getTime();
+  return jwt.encode({ id: user.id, iat: timeStamp }, 'Meow!');
+}
+
 const passport = require('passport');
-const { request } = require('express');
+require('../passport');
 
-passport.use(User.createStrategy());
-
-// use static serialize and deserialize of model for passport session support
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+// const requireAuth = passport.authenticate('jwt', { session: false });
 
 const resolvers = {
   Query: {
     author(root, args) {
       return Author.findOne(Object.assign({}, args)).populate('posts');
     },
-    comments(root, args, { user }) {
-      if (!user) {
-        throw new Error('Must be logged in to view comments');
-      }
+    comments(root, args) {
+      console.log(args.token);
+      // if (!user) {
+      //   throw new Error('Must be logged in to view comments');
+      // }
 
       // Return all comments
       return Promise.resolve()
@@ -44,42 +48,60 @@ const resolvers = {
 
       return author;
     },
-    comments(root, args) {
+    comments(root, args, { token }) {
+      console.log(token);
       const comment = new Comment(args);
       comment.save();
 
       return comment;
     },
-    async signup(root, { email, password }) {
-      const user = new User({ email });
-      const register = promisify(User.register, User);
-      let errors = [];
+    signin(root, { email, password}) {
+      return new Promise((resolve, reject) => {
+        const req = {
+          body: {
+            email,
+            password
+          }
+        };
 
-      if (!validator.isEmail(email)) {
-        errors.push({ key: 'email', message: 'Invalid Email Address' });
-      }
+        requireSignin(req);
+      });
+    },
+    signup(root, { email, password }, context) {
+      return new Promise((resolve, reject) => {
+        User.findOne({ email }, (err, existingUser) => {
+          if (err) {
+            return reject(err); 
+          }
 
-      if (validator.isEmpty(email)) {
-        errors.push({ key: 'email', message: 'Provide Email Address' });
-      }
+          if (existingUser) {
+            return reject('Email already in use');
+          }
 
-      if (validator.isEmpty(password)) {
-        errors.push({ key: 'password', message: 'Provide password' });
-      }
+          if (validator.isEmpty(email)) {
+            return reject('Provide Email Address');
+          }
 
-      /* Send Custom error messages before pivoting to passport-local-mongoose */
-      if (errors.length > 0) {
-        return { errors }
-      }
+          if (!validator.isEmail(email)) {
+            return reject('Invalid Email Address');
+          }
 
-      try {
-        await register(user, password);
-      } catch(e) {
-        errors.push({ key: null, message: e.message.replace('username', 'email') });
-        return { errors }
-      }
+          if (validator.isEmpty(password)) {
+            return reject('Provide password');
+          }
 
-      return user;
+          const user = new User({ email, password });
+          const token = tokenForUser(user);
+
+          context.token = token;
+
+          user.save(() => {
+            return resolve(
+              Object.assign({}, JSON.parse(JSON.stringify(user)), { token })
+              );
+          });
+        });
+      });
     }
   },
   Author: {

@@ -26,6 +26,7 @@ const typeDefs = `
     id: String #Mongo Ids are 32-bit signed integer, better off coersed to a string.
     email: String
     gravatar: String
+    token: String
     errors: [Errors]
   }
 
@@ -36,7 +37,7 @@ const typeDefs = `
 
   type Query {
     author(firstName: String, lastName: String): Author
-    comments: [Comment]
+    comments(token: String): [Comment]
     user: User
     getFortuneCookie: String
   }

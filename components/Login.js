@@ -3,8 +3,9 @@ import { gql, graphql } from 'react-apollo';
 
 class LoginForm extends React.Component {
   state = {
-    email: 'email',
-    password: 'password'
+    email: '',
+    password: '',
+    error: ''
   }
 
   onFormSubmit = (e) => {
@@ -22,9 +23,14 @@ class LoginForm extends React.Component {
       })
     }
     fetch('/login', options)
-      .catch(e => {
-        console.log(e);
+      .then(data => data.json())
+      .then(data => {
+        this.setState({ email: '', password: '', error: '' });
+        localStorage.setItem('token', data.token);
       })
+      .catch(() => {
+        this.setState({ error: 'Username or Password incorrect' });
+      });
     // props.mutate({
     //   variables: {
     //     email: state.email,
@@ -38,14 +44,17 @@ class LoginForm extends React.Component {
   render() {
     return (
       <form onSubmit={this.onFormSubmit}>
+        {this.state.error && <p style={{color: 'red'}}>{this.state.error}</p>}
         <input 
           type='text' 
           placeholder='email' 
+          value={this.state.email}
           onInput={e => this.setState({ email: e.target.value }) }
         /> <br/>
         <input 
           type='password' 
-          placeholder='password' 
+          placeholder='password'
+          value={this.state.password} 
           onInput={e => this.setState({ password: e.target.value })}
         /> <br/>
         <button> Submit </button>
