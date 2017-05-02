@@ -3,6 +3,7 @@ const User = require('../models/User');
 const promisify = require('es6-promisify');
 const validator = require('validator');
 const passport = require('passport');
+const { request } = require('express');
 
 passport.use(User.createStrategy());
 
@@ -16,23 +17,24 @@ const resolvers = {
       return Author.findOne(Object.assign({}, args)).populate('posts');
     },
     comments(root, args, { user }) {
-      console.log(user);
-      return new Promise((resolve, reject) => {
-        if (user) {
-          resolve(Comment.find());
-        }
-      });
+      if (!user) {
+        throw new Error('Must be logged in to view comments');
+      }
+
       // Return all comments
+      return Promise.resolve()
+        .then(() => Comment.find());
     },
     getFortuneCookie() {
       return FortuneCookie.getOne();
     },
     user(root, args, { user }) {
-      return new Promise((resolve, reject) => {
-        if (!user) { reject('Not logged in!'); }
+      if (!user) {
+        throw new Error('Must be logged in to view users');
+      }
 
-        resolve(user);
-      });
+      return Promise.resolve()
+        .then(() => user);
     }
   },
   Mutation: {
@@ -47,23 +49,6 @@ const resolvers = {
       comment.save();
 
       return comment;
-    },
-    async signin(root, { email, password }, { login, user }) {
-      passport.authenticate('local', async (err, user) => {
-        if (!user) {
-          console.log('Not found!');
-          return;
-        }
-
-        await login(user, () => {
-          console.log('Logged in', user);
-          return {user};
-        });
-      })({ body: { email, password }});
-      // await login(, password });
-      // check login
-      // if auth, send a token
-      return Object.assign({}, user);
     },
     async signup(root, { email, password }) {
       const user = new User({ email });
