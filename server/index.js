@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-const passport = require('passport');
 const { createServer } = require('http');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/graphql';
@@ -48,25 +47,7 @@ app.prepare()
 
     server.use(bodyParser.json());
 
-    // Passport JS is what we use to handle our logins
-    server.use(passport.initialize());
-    server.use(passport.session());
-
-    // How login will be... Moggled up but...
-    server.post('/login', (req, res, next) => {
-      const { email, password } = req.body;
-
-      passport.authenticate('local', (err, user) => {
-        if (!user) {
-          res.sendStatus(400).end('Auth Error!');
-        }
-
-        req.login(user, () => {
-          console.log('Logged in', user);
-        });
-        next(user);
-      })({ body: { email, password }});
-    });
+    require('./controllers/auth')(server);
 
     server.use('/graphql', graphqlExpress((req) => ({
       schema,
