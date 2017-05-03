@@ -1,6 +1,6 @@
 const { Author, Post, Comment, FortuneCookie, View } = require('./connectors');
 const User = require('../models/User');
-const { request } = require('express');
+const validator = require('validator');
 const passport = require('passport');
 
 const resolvers = {
@@ -33,15 +33,42 @@ const resolvers = {
 
       return author;
     },
-    signin(root, args) {
+    signin(_, args, ctx) {
       return new Promise((resolve, reject) => {
         passport.authenticate('local', (err, user) => {
           if (!user) {
             return reject(err);
           }
 
-          resolve(user);
+          ctx.login(user, () => resolve(user));
         })({ body: args });
+      });
+    },
+    signup(_, args, ctx) {
+      return new Promise((resolve, reject) => {
+        const { email, password } = args;
+
+        if (validator.isEmpty(email)) {
+          return reject('Email Address cannot be empty');
+        }
+
+        if (!validator.isEmail(email)) {
+          return reject('Invalid Email Address');
+        }
+
+        if (validator.isEmpty(password)) {
+          return reject('Password cannot be empty');
+        }
+
+        const user = new User({ email });
+
+        User.register(user, password, (err) => {
+          if (err) {
+            return reject(err.message);
+          }
+
+          ctx.login(user, () => resolve(user));
+        });
       });
     },
     comments(root, args) {

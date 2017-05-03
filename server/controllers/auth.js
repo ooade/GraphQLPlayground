@@ -14,7 +14,7 @@ const signin = (req, res) => {
 			return res.status(422).send({ error: 'Email/Password incorrect' }); 
 		}
 
-		res.send(user);
+		req.login(user, () => res.send(user));
 	})(req, res);
 }
 
@@ -45,7 +45,7 @@ const signup = (req, res, next) => {
 };
 
 module.exports = app => {
-		// Passport JS is what we use to handle our logins
+	// Passport JS is what we use to handle our logins
 	app.use(passport.initialize());
 	app.use(passport.session());
 

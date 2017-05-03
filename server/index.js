@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const next = require('next');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const promisify = require('es6-promisify');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -37,24 +39,31 @@ app.prepare()
   .then(_ => {
     const server = express();
 
+    server.use(bodyParser.json());
+    server.use(bodyParser.urlencoded({ extended: false }));
+
+    server.use(cookieParser());
+
     server.use(session({
       resave: false, //don't save session if unmodified
       saveUninitialized: false, // don't create session until something stored
       secret: process.env.SECRET || 'Meow!',
-      key: process.env.KEY || 1234,
+      key: process.env.KEY || 'token',
       store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
     }));
 
-    server.use(bodyParser.json());
+    // promisify some callback based APIs
+    // server.use((req, res, next) => {
+    //   req.login = promisify(req.login, req);
+    //   next();
+    // });
 
     require('./controllers/auth')(server);
 
     server.use('/graphql', graphqlExpress((req) => ({
       schema,
       pretty: true,
-      context: {
-        user: req.user
-      }
+      context: req
     })));
 
     server.use('/graphiql', graphiqlExpress({
