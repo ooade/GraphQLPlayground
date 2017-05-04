@@ -1,49 +1,34 @@
 import React from 'react';
+import { gql, graphql } from 'react-apollo';
 
-export default class extends React.Component {
+class SigninForm extends React.Component {
 	state = {
-		error: '',
 		email: '',
-		password: ''
+		password: '',
+		errors: []
 	}
 
 	onFormSubmit = (e) => {
 		e.preventDefault();
 
-		const options = {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			credentials: 'same-origin', // Necessary for our cookie :)
-			body: JSON.stringify({
+		this.props.mutate({
+			variables: {
 				email: this.state.email,
 				password: this.state.password
-			})
-		}
-
-		fetch('/signin', options)
-			.then(res => {
-				console.log(res);
-				return res.json();
-			})
-			.then(({ error }) => {
-				if (error) {
-					this.setState({ error });
-				} else {
-					this.setState({ error: '' });
-				}
-			});
+			}
+		}).then(() => {
+			// Done!
+		}).catch(res => {
+			// Error!
+			const errors = res.graphQLErrors.map(error => error.message);
+      this.setState({ errors });
+		});
 	}
 
 	render() {
 		return (
 			<form onSubmit={this.onFormSubmit}>
-				{ this.state.error &&
-					<p style={{ color: 'red' }}>
-						{ this.state.error }
-					</p>
-				}
+				{this.state.errors.map(error => <p key={error} style={{color: 'red'}}>{error}</p>)}
 				<input
 					type='text'
 					placeholder='email'
@@ -63,3 +48,13 @@ export default class extends React.Component {
 		)
 	}
 }
+
+const mutator = gql`
+	mutation signin($email: String!, $password: String!) {
+		signin(email: $email, password: $password) {
+			email
+		}
+	}
+`;
+
+export default graphql(mutator)(SigninForm);

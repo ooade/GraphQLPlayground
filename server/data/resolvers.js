@@ -1,7 +1,6 @@
 const { Author, Post, Comment, FortuneCookie, View } = require('./connectors');
 const User = require('../models/User');
-const validator = require('validator');
-const passport = require('passport');
+const AuthService = require('../services/auth');
 
 const resolvers = {
   Query: {
@@ -33,43 +32,17 @@ const resolvers = {
 
       return author;
     },
-    signin(_, args, ctx) {
-      return new Promise((resolve, reject) => {
-        passport.authenticate('local', (err, user) => {
-          if (!user) {
-            return reject(err);
-          }
-
-          ctx.login(user, () => resolve(user));
-        })({ body: args });
-      });
+    signin(root, { email, password }, ctx) {
+      return AuthService.signin({ email, password, ctx });
     },
-    signup(_, args, ctx) {
-      return new Promise((resolve, reject) => {
-        const { email, password } = args;
-
-        if (validator.isEmpty(email)) {
-          return reject('Email Address cannot be empty');
-        }
-
-        if (!validator.isEmail(email)) {
-          return reject('Invalid Email Address');
-        }
-
-        if (validator.isEmpty(password)) {
-          return reject('Password cannot be empty');
-        }
-
-        const user = new User({ email });
-
-        User.register(user, password, (err) => {
-          if (err) {
-            return reject(err.message);
-          }
-
-          ctx.login(user, () => resolve(user));
-        });
-      });
+    signup(root, { email, password }, ctx) {
+      return AuthService.signup({ email, password, ctx });
+    },
+    signout(root, args, ctx) {
+      return AuthService.signout(ctx);
+    },
+    signoutall(root, { email }, ctx) {
+      return AuthService.signoutall({ email, ctx });
     },
     comments(root, args) {
       const comment = new Comment(args);
@@ -81,7 +54,7 @@ const resolvers = {
   Author: {
     posts(author) {
       return author.posts;
-    },
+    }
   },
   Post: {
     views(post) {

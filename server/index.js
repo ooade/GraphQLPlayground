@@ -7,6 +7,7 @@ const promisify = require('es6-promisify');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const passport = require('passport');
 const { createServer } = require('http');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/graphql';
@@ -52,13 +53,9 @@ app.prepare()
       store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
     }));
 
-    // promisify some callback based APIs
-    // server.use((req, res, next) => {
-    //   req.login = promisify(req.login, req);
-    //   next();
-    // });
-
-    require('./controllers/auth')(server);
+    // Passport JS is what we use to handle our logins
+    server.use(passport.initialize());
+    server.use(passport.session());
 
     server.use('/graphql', graphqlExpress((req) => ({
       schema,

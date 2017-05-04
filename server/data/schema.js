@@ -26,7 +26,6 @@ const typeDefs = `
     id: String #Mongo Ids are 32-bit signed integer, better off coersed to a string.
     email: String
     gravatar: String
-    errors: [Errors]
   }
 
   type Comment {
@@ -42,9 +41,11 @@ const typeDefs = `
   }
 
   type Mutation {
-    author(firstName: String, lastName: String): Author
     signin(email: String!, password: String!): User
     signup(email: String!, password: String!): User
+    signout(email: String): User
+    signoutall(email: String): User
+    author(firstName: String, lastName: String): Author
     comments(name:String, comment: String): Comment
   }
 

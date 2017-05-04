@@ -4,7 +4,6 @@ const mongodbErrorHandler = require('mongoose-mongodb-errors');
 const passportLocalMongoose = require('passport-local-mongoose');
 const md5 = require('md5');
 
-
 const userSchema = new Schema({
   email: {
     type: String,
