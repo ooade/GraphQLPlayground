@@ -14,13 +14,13 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/graphql';
 
 mongoose.connect(MONGO_URI);
 
-mongoose.connection.on('error', (error) => {
-  console.log('Check your database connection');
-  process.exit(1);
+mongoose.connection.on('error', error => {
+	console.log('Check your database connection');
+	process.exit(1);
 });
 
 mongoose.connection.on('open', () => {
-  console.log('Mongo connected 😉');
+	console.log('Mongo connected 😉');
 });
 
 // Assign ES6 Promise to mongoose
@@ -36,44 +36,56 @@ const schema = require('./data/schema');
 
 const GRAPHQL_PORT = process.env.PORT || 8080;
 
-app.prepare()
-  .then(_ => {
-    const server = express();
+app.prepare().then(_ => {
+	const server = express();
 
-    server.use(bodyParser.json());
-    server.use(bodyParser.urlencoded({ extended: false }));
+	server.use(bodyParser.json());
+	server.use(bodyParser.urlencoded({ extended: false }));
 
-    server.use(cookieParser());
+	server.use(cookieParser());
 
-    server.use(session({
-      resave: false, //don't save session if unmodified
-      saveUninitialized: false, // don't create session until something stored
-      secret: process.env.SECRET || 'Meow!',
-      key: process.env.KEY || 'token',
-      store: new MongoStore({ url: MONGO_URI, touchAfter: 24 * 3600 /* time period in seconds(24 hours) */ })
-    }));
+	server.use(
+		session({
+			resave: false, //don't save session if unmodified
+			saveUninitialized: false, // don't create session until something stored
+			secret: process.env.SECRET || 'Meow!',
+			key: process.env.KEY || 'token',
+			store: new MongoStore({
+				url: MONGO_URI,
+				touchAfter: 24 * 3600 /* time period in seconds(24 hours) */
+			})
+		})
+	);
 
-    // Passport JS is what we use to handle our logins
-    server.use(passport.initialize());
-    server.use(passport.session());
+	// Passport JS is what we use to handle our logins
+	server.use(passport.initialize());
+	server.use(passport.session());
 
-    server.use('/graphql', graphqlExpress((req) => ({
-      schema,
-      pretty: true,
-      context: req
-    })));
+	server.use(
+		'/graphql',
+		graphqlExpress(req => ({
+			schema,
+			pretty: true,
+			context: req
+		}))
+	);
 
-    server.use('/graphiql', graphiqlExpress({
-      endpointURL: '/graphql'
-    }));
+	server.use(
+		'/graphiql',
+		graphiqlExpress({
+			endpointURL: '/graphql'
+		})
+	);
 
-    server.get('*', (req, res) => handle(req, res));
+	server.get('*', (req, res) => handle(req, res));
 
-    const graphqlServer = createServer(server);
+	const graphqlServer = createServer(server);
 
-    require('./sockets')(graphqlServer);
+	require('./sockets')(graphqlServer);
 
-    graphqlServer.listen(GRAPHQL_PORT, () => {
-      console.log(`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}`);
-    });
-  });
+	graphqlServer.listen(GRAPHQL_PORT, () => {
+		console.log(
+			`GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}`
+		);
+	});
+});

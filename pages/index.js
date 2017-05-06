@@ -4,7 +4,7 @@ import withData from '../lib/withData';
 const socket = require('socket.io-client')('');
 
 socket.on('connect', () => {
-  console.log('socketio client connected...');
+	console.log('socketio client connected...');
 });
 
 socket.emit('client connected', 'user');
@@ -13,9 +13,11 @@ socket.emit('client connected', 'user');
 import CommentsList from '../components/CommentsList';
 import SubmitComment from '../components/SubmitComment';
 
+// Place a componentWillMount here ;)
+
 export default withData(props => (
-  <div>
-    <SubmitComment socket={socket} query={props.url.query} />
-    <CommentsList socket={socket} query={props.url.query} />
-  </div>
-))
+	<div>
+		<SubmitComment socket={socket} query={props.url.query} />
+		<CommentsList socket={socket} query={props.url.query} />
+	</div>
+));

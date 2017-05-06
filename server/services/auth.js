@@ -19,7 +19,7 @@ exports.signin = ({ email, password, ctx }) => {
 			ctx.login(user, () => resolve(user));
 		})({ body: { email, password } });
 	});
-}
+};
 
 exports.signup = ({ email, password, ctx }) => {
 	return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ exports.signup = ({ email, password, ctx }) => {
 
 		const user = new User({ email });
 
-		User.register(user, password, (err) => {
+		User.register(user, password, err => {
 			if (err) {
 				return reject(err.message);
 			}
@@ -47,10 +47,10 @@ exports.signup = ({ email, password, ctx }) => {
 	});
 };
 
-exports.signout = (ctx) => {
+exports.signout = ctx => {
 	ctx.logout();
 	console.log('You are now logged out! 👋');
-}
+};
 
 exports.signoutall = ({ email, ctx }) => {
 	Session.remove({ session: { $regex: email } }, (err, doc) => {
@@ -61,4 +61,4 @@ exports.signoutall = ({ email, ctx }) => {
 		ctx.logout();
 		console.log('You are now logged out on all browsers! 👋');
 	});
-}
+};

@@ -6,46 +6,57 @@ class SigninForm extends React.Component {
 		email: '',
 		password: '',
 		errors: []
-	}
+	};
 
-	onFormSubmit = (e) => {
+	onFormSubmit = e => {
 		e.preventDefault();
 
-		this.props.mutate({
-			variables: {
-				email: this.state.email,
-				password: this.state.password
-			}
-		}).then(() => {
-			// Done!
-		}).catch(res => {
-			// Error!
-			const errors = res.graphQLErrors.map(error => error.message);
-      this.setState({ errors });
-		});
-	}
+		this.props
+			.mutate({
+				variables: {
+					email: this.state.email,
+					password: this.state.password
+				}
+			})
+			.then(() => {
+				// Done!
+			})
+			.catch(res => {
+				// Error!
+				const errors = res.graphQLErrors.map(error => error.message);
+				this.setState({ errors });
+			});
+	};
 
 	render() {
 		return (
 			<form onSubmit={this.onFormSubmit}>
-				{this.state.errors.map(error => <p key={error} style={{color: 'red'}}>{error}</p>)}
+				{this.state.errors.map(error => (
+					<p key={error} style={{ color: 'red' }}>
+						{error}
+					</p>
+				))}
 				<input
-					type='text'
-					placeholder='email'
+					type="text"
+					placeholder="email"
 					value={this.state.email}
-					onInput={e => this.setState({ email: e.target.value }) }
-				/> <br/>
+					onInput={e => this.setState({ email: e.target.value })}
+				/>
+				{' '}
+				<br />
 				<input
-					type='password'
-					placeholder='password'
+					type="password"
+					placeholder="password"
 					value={this.state.password}
 					onInput={e => this.setState({ password: e.target.value })}
-				/> <br/>
+				/>
+				{' '}
+				<br />
 				<button> Submit </button>
-				<a href='/'>Go home</a> {' '}
-				<a href='/signup'>Signup</a>
+				<a href="/">Go home</a> {' '}
+				<a href="/signup">Signup</a>
 			</form>
-		)
+		);
 	}
 }
 
