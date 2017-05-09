@@ -1,6 +1,8 @@
 # GraphQLPlayground
 
 ## Wanna run my Playground?
-> Install MongoDB
-> npm install
-> npm run dev
+> Make sure you have mongodb installed.
+- npm install
+- npm run dev
+
+> Server runs on http://localhost:8080
