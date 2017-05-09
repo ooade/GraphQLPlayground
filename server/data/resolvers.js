@@ -8,9 +8,9 @@ const resolvers = {
 			return Author.findOne(Object.assign({}, args)).populate('posts');
 		},
 		comments(root, args, { user }) {
-			if (!user) {
-				throw new Error('Must be logged in to view comments');
-			}
+			// if (!user) {
+			// 	throw new Error('Must be logged in to view comments');
+			// }
 			// Return all comments
 			return Comment.find();
 		},

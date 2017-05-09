@@ -12,6 +12,7 @@ socket.emit('client connected', 'user');
 // import components
 import CommentsList from '../components/CommentsList';
 import SubmitComment from '../components/SubmitComment';
+import RandomQuote from '../components/RandomQuote';
 
 // Place a componentWillMount here ;)
 
@@ -19,5 +20,6 @@ export default withData(props => (
 	<div>
 		<SubmitComment socket={socket} query={props.url.query} />
 		<CommentsList socket={socket} query={props.url.query} />
+		<RandomQuote />
 	</div>
 ));

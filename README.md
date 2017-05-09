@@ -1,4 +1,6 @@
 # GraphQLPlayground
 
-# Why we use passPerPreset?
-https://github.com/babel/babel/releases/tag/v6.5.0
+## Wanna run my Playground?
+> Install MongoDB
+> npm install
+> npm run dev
