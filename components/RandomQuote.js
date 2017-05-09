@@ -6,8 +6,13 @@ const mutator = gql`
 	}
 `;
 
-export default graphql(mutator)(({ data }) => (
+export default graphql(mutator)(({ data: { getFortuneCookie, error } }) => (
 	<div>
-		{ data.getFortuneCookie }
+		{error &&
+			error.graphQLErrors.map(e => [
+				<h4>Error:</h4>,
+				<p key={e.message} style={{ color: 'red' }}>{e.message}</p>
+			])}
+		{getFortuneCookie}
 	</div>
 ));

@@ -70,7 +70,11 @@ const FortuneCookie = {
 	getOne() {
 		return axios(
 			'http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1'
-		).then(res => res.data[0].content);
+		)
+			.then(res => res.data[0].content)
+			.catch(e => {
+				throw new Error('Could not fetch data. Check your network connection...');
+			});
 	}
 };
 
