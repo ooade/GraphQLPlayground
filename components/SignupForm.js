@@ -1,39 +1,35 @@
 import React from 'react';
-import { gql, graphql } from 'react-apollo';
+import { signup } from '../lib/firebase';
 
-class SignupForm extends React.Component {
+export default class SignupForm extends React.Component {
 	state = {
 		email: '',
 		password: '',
-		errors: []
+		errors: ''
 	};
 
 	onFormSubmit = e => {
 		e.preventDefault();
 
-		this.props
-			.mutate({
-				variables: {
-					email: this.state.email,
-					password: this.state.password
+		signup({ email: this.state.email, password: this.state.password })
+			.then(() => this.setState({ error: '' }))
+			.catch(error => {
+				// Handle Errors
+				let errorCode = error.code;
+				let errorMessage = error.message;
+
+				if (errorCode === 'auth/weak-password') {
+					this.setState({ error: 'The password is too weak.' });
+				} else {
+					this.setState({ error: errorMessage });
 				}
-			})
-			.then(() => {
-				// Done!
-			})
-			.catch(res => {
-				// Error!
-				const errors = res.graphQLErrors.map(error => error.message);
-				this.setState({ errors });
 			});
 	};
 
 	render() {
 		return (
 			<form onSubmit={this.onFormSubmit}>
-				{this.state.errors.map(error => (
-					<p key={error} style={{ color: 'red' }}>{error}</p>
-				))}
+				{this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
 				<input
 					type="text"
 					placeholder="email"
@@ -56,13 +52,3 @@ class SignupForm extends React.Component {
 		);
 	}
 }
-
-const mutator = gql`
-	mutation signup($email: String!, $password: String!) {
-		signup(email: $email, password: $password) {
-			email
-		}
-	}
-`;
-
-export default graphql(mutator)(SignupForm);

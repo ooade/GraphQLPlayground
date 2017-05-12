@@ -6,4 +6,4 @@ npm-debug.log*
 # builds/modules
 node_modules
 .next
-build
+lib/config.js
