@@ -2,13 +2,10 @@ const express = require('express');
 const path = require('path');
 const next = require('next');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const promisify = require('es6-promisify');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
-const passport = require('passport');
 const { createServer } = require('http');
+const admin = require('firebase-admin');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/graphql';
 
@@ -30,6 +27,16 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dir: '.', dev });
 const handle = app.getRequestHandler();
 
+const { serverConfig } = require('../lib/config');
+
+const firebase = admin.initializeApp(
+	{
+		credential: admin.credential.cert(serverConfig),
+		databaseURL: 'https://test-4facd.firebaseio.com'
+	},
+	'server'
+);
+
 const { graphqlExpress, graphiqlExpress } = require('graphql-server-express');
 
 const schema = require('./data/schema');
@@ -42,24 +49,41 @@ app.prepare().then(_ => {
 	server.use(bodyParser.json());
 	server.use(bodyParser.urlencoded({ extended: false }));
 
-	server.use(cookieParser());
-
 	server.use(
 		session({
 			resave: false, //don't save session if unmodified
 			saveUninitialized: false, // don't create session until something stored
 			secret: process.env.SECRET || 'Meow!',
-			key: process.env.KEY || 'token',
-			store: new MongoStore({
-				url: MONGO_URI,
-				touchAfter: 24 * 3600 /* time period in seconds(24 hours) */
-			})
+			cookie: {
+				maxAge: 604800000
+			}
 		})
 	);
 
-	// Passport JS is what we use to handle our logins
-	server.use(passport.initialize());
-	server.use(passport.session());
+	server.use((req, res, next) => {
+		req.firebaseServer = firebase;
+		next();
+	});
+
+	server.post('/token/verify', (req, res) => {
+		if (!req.body) return res.sendStatus(400);
+
+		const token = req.body.token;
+		firebase
+			.auth()
+			.verifyIdToken(token)
+			.then(user => {
+				req.session.user = user;
+				return user;
+			})
+			.then(user => res.json({ status: true, user }))
+			.catch(error => res.json({ error }));
+	});
+
+	server.post('/token/destroy', (req, res) => {
+		req.session.user = null;
+		res.json({ status: true });
+	});
 
 	server.use(
 		'/graphql',

@@ -18,6 +18,7 @@ import RandomQuote from '../components/RandomQuote';
 
 export default withData(props => (
 	<div>
+		{props.user ? <p> {props.user.email} </p> : <p>Not logged in</p>}
 		<SubmitComment socket={socket} query={props.url.query} />
 		<CommentsList socket={socket} query={props.url.query} />
 		<RandomQuote />

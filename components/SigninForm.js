@@ -1,5 +1,5 @@
 import React from 'react';
-import { signin } from '../lib/firebase';
+import { signin, signout } from '../lib/firebase';
 
 class SigninForm extends React.Component {
 	state = {
@@ -19,30 +19,38 @@ class SigninForm extends React.Component {
 			.catch(error => this.setState({ error: error.message }));
 	};
 
+	handleSignout () {
+    signout().then(() => console.log('I\'m gone you shit!'));
+  }
+
 	render() {
 		return (
-			<form onSubmit={this.onFormSubmit}>
-				{this.state.error && <p style={{ color: 'red' }}>{this.state.error}</p>}
-				<input
-					type="text"
-					placeholder="email"
-					value={this.state.email}
-					onInput={e => this.setState({ email: e.target.value })}
-				/>
-				{' '}
-				<br />
-				<input
-					type="password"
-					placeholder="password"
-					value={this.state.password}
-					onInput={e => this.setState({ password: e.target.value })}
-				/>
-				{' '}
-				<br />
-				<button> Submit </button>
-				<a href="/">Go home</a> {' '}
-				<a href="/signup">Signup</a>
-			</form>
+			<div>
+				<form onSubmit={this.onFormSubmit}>
+					{this.state.error &&
+						<p style={{ color: 'red' }}>{this.state.error}</p>}
+					<input
+						type="text"
+						placeholder="email"
+						value={this.state.email}
+						onInput={e => this.setState({ email: e.target.value })}
+					/>
+					{' '}
+					<br />
+					<input
+						type="password"
+						placeholder="password"
+						value={this.state.password}
+						onInput={e => this.setState({ password: e.target.value })}
+					/>
+					{' '}
+					<br />
+					<button> Submit </button>
+					<a href="/">Go home</a> {' '}
+					<a href="/signup">Signup</a> {' '}
+				</form>
+				<button onClick={this.handleSignout}>Signout</button>
+			</div>
 		);
 	}
 }

@@ -7,8 +7,8 @@ const resolvers = {
 		author(root, args) {
 			return Author.findOne(Object.assign({}, args)).populate('posts');
 		},
-		comments(root, args, { user }) {
-			// if (!user) {
+		comments(root, args, ctx) {
+			// if (!ctx.session.user) {
 			// 	throw new Error('Must be logged in to view comments');
 			// }
 			// Return all comments

@@ -30,6 +30,7 @@
     "express": "4.15.2",
     "express-session": "^1.15.2",
     "firebase": "^3.9.0",
+    "firebase-admin": "^4.2.1",
     "graphql": "^0.9.1",
     "graphql-server-express": "^0.6.0",
     "graphql-tools": "^0.11.0",

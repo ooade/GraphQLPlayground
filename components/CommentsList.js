@@ -8,7 +8,6 @@ class CommentsList extends React.Component {
 
 	componentDidMount() {
 		const { data: { refetch }, socket, query: { key } } = this.props;
-		console.log(this.props);
 		socket.emit('join private', key);
 
 		socket.on('add comment', () => {
